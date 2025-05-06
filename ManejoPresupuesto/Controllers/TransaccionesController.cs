@@ -2,6 +2,7 @@
 using ClosedXML.Excel;
 using ManejoPresupuesto.Models;
 using ManejoPresupuesto.Servicios;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Data;
@@ -9,6 +10,7 @@ using System.Reflection;
 
 namespace ManejoPresupuesto.Controllers
 {
+    
     public class TransaccionesController : Controller
     {
         private readonly IServiciosUsuarios serviciosUsuarios;
@@ -28,6 +30,7 @@ namespace ManejoPresupuesto.Controllers
             this.servicioReportes = servicioReportes;
         }
 
+        
         public async Task<IActionResult> Index(int mes, int año)
         {
             var usuarioId = serviciosUsuarios.ObtenerUsuarioId();
@@ -133,7 +136,7 @@ namespace ManejoPresupuesto.Controllers
             model.TransaccionesPorMes = transaccionesAgrupadas;
             return View(model);
         }
-        public async Task<IActionResult> ExcelReporte()
+        public IActionResult ExcelReporte()
         {
             return View();
         }
@@ -407,7 +410,12 @@ namespace ManejoPresupuesto.Controllers
         private async Task<IEnumerable<SelectListItem>> ObtenerCategorias(int usuarioId, TipoOperacion tipoOperacion)
         {
             var categorias = await repositorioCategorias.Obtener(usuarioId, tipoOperacion);
-            return categorias.Select(x => new SelectListItem(x.Nombre, x.Id.ToString()));
+            var resultado = categorias.Select(x => new SelectListItem(x.Nombre, x.Id.ToString())).ToList().ToList();
+            var opcionPorDefecto = new SelectListItem("-- Seleccione una categoría --", "0", true);
+
+            resultado.Insert(0, opcionPorDefecto);
+
+            return resultado;
         }
 
         [HttpPost]
